@@ -22,6 +22,8 @@ a {
 
 #search-and-favorites-toggle-container {
 	text-align: center;
+	display: flex;
+	justify-content: center;
 }
 
 #search-and-favorites-toggle-container .button {
@@ -99,6 +101,17 @@ a {
 
 .hide {
 	display: none;
+}
+
+.background-dark {
+	background-color: #363636;
+    color: #f5f5f5;
+}
+
+.toggle-button {
+	width: 15%;
+    padding: 10px;
+    border: 2px solid #363636;
 }
 
 .movie-result-item {

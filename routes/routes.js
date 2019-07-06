@@ -29,8 +29,11 @@ router.post('/loginUser', usersController.loginUser);
 // search index
 router.get('/api/searchMovies/', favoriteMoviesController.search);
 
-// search show
-router.get('/api/searchMovies/:id', favoriteMoviesController.searchOne);
+// search show with movie id
+router.get('/api/searchMovies/:movie_id', favoriteMoviesController.searchOneByMovieId);
+
+// search show with movie and user id
+router.get('/api/searchMovies/:movie_id/:user_id', favoriteMoviesController.searchOneByMovieIdAndUserId);
 
 // find favorite by user id and movie id
 router.get('/api/favorites/:user_id/:favorite_movie_id', favoriteMoviesController.findByMovieIdAndUserId);

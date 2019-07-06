@@ -8,6 +8,8 @@
 	<link rel="stylesheet" type="text/css" href="css/style.css">
 </head>
 <body>
+
+	<!-- Header -->
 	<div class="header">
 		<div>
 			<p class="header-heading"><strong>SAVE</strong>UR<strong>FAVE</strong></p>
@@ -27,12 +29,14 @@
 			</div>
 		</div>
 	</div>
-
+	
+	<!-- Search/Favorites toggle container -->
 	<div id="search-and-favorites-toggle-container">
-		<a id="search-toggle-button" class="button is-dark">Search</a>
-		<a id="favorites-toggle-button" class="button">Favorites</a>
+		<div id="search-toggle-button" class="toggle-button background-dark">Search</div>
+		<div id="favorites-toggle-button" class="toggle-button">Favorites</div>
 	</div>
-
+	
+	<!-- Search field and search results container -->
 	<div id="movie-search-and-results-container">
 		<div id="movie-search-container-div">
 			<div class="field is-grouped">
@@ -51,12 +55,13 @@
 			<div id="movie-results-list"></div>
 		</div>
 	</div>
-
+	
+	<!-- Favorite movies container -->
 	<div id="favorite-movies-container">
 		<div id="favorite-movies-list"></div>
 	</div>
 
-
+	<!-- Signup modal -->
 	<div id="signup-modal" class="modal">
 		<div class="modal-background"></div>
 		<div class="modal-card">
@@ -108,7 +113,8 @@
 			</section>
 		</div>
 	</div>
-
+	
+	<!-- Login modal -->
 	<div id="login-modal" class="modal">
 		<div class="modal-background"></div>
 		<div class="modal-card">
@@ -152,7 +158,8 @@
 			</section>
 		</div>
 	</div>
-
+	
+	<!-- Movie details modal -->
 	<div id="movie-details-modal" class="modal">
 		<div class="modal-background"></div>
 		<div class="modal-card">
@@ -199,7 +206,8 @@
 			</section>
 		</div>
 	</div>
-
+	
+	<!-- Feedback modal to prompt the user to signin or login -->
 	<div id="not-logged-in-modal" class="modal">
 		<div class="modal-background"></div>
 		<div class="modal-card">
@@ -225,6 +233,7 @@
 			</section>
 		</div>
 	</div>
+	
 	<script type="text/javascript" src="js/app.js"></script>
 </body>
 </html>

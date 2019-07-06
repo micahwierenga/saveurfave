@@ -16,12 +16,35 @@ function search(req, res) {
 	})
 }
 
-function searchOne(req, res) {
+function searchOneByMovieId(req, res) {
 	let url = omdbUrl + "&i=" + req.params.id;
 	request(url, function(err, response, body) {
 	    res.json(JSON.parse(body));
 	})
 };
+
+function searchOneByMovieIdAndUserId(req, res) {
+	let movie_id = req.params.movie_id;
+	let user_id = req.params.user_id;
+	let url = omdbUrl + "&i=" + movie_id;
+	FavoriteMovie.findAll({
+		where: {
+			user_id: user_id
+		}
+	})
+	.then(function(userMovies) {
+		request(url, function(err, response, body) {
+			let parsedMovie = JSON.parse(body);
+			for(let i = 0; i < userMovies.length; i++) {
+				if(userMovies[i].favorite_movie_id == parsedMovie.imdbID) {
+					parsedMovie.inUserFavorites = true;
+					parsedMovie.favorite_movie_table_id = userMovies[i].id;
+				}
+			}
+			res.json(parsedMovie);
+		})
+	})
+}
 
 function findByMovieIdAndUserId(req, res) {
 	FavoriteMovie.findOne({
@@ -42,18 +65,23 @@ function findByUserId(req, res) {
 		}
 	})
 	.then(function(movies) {
-		let movieList = [];
+		if(movies.length < 1) {
+			res.json({message: 'No results found'});
+		} else {
+			let movieList = [];
 
-		for(let i = 0; i < movies.length; i++) {
-		    let requestUrl = omdbUrl + '&i=' + movies[i].favorite_movie_id;
-		    request(requestUrl, function(err, response, body) {
-		    	let parsedBody = JSON.parse(body);
-		    	parsedBody.id = movies[i].id;
-		    	movieList.push(parsedBody);
-			    if(movieList.length == movies.length) {
-			    	res.json(movieList);
-			    }
-		    })
+			for(let i = 0; i < movies.length; i++) {
+			    let requestUrl = omdbUrl + '&i=' + movies[i].favorite_movie_id;
+			    request(requestUrl, function(err, response, body) {
+			    	let parsedBody = JSON.parse(body);
+			    	parsedBody.id = movies[i].id;
+			    	movieList.push(parsedBody);
+				    if(movieList.length == movies.length) {
+				    	movieList.sort((a, b) => (a.id > b.id) ? 1 : -1);
+				    	res.json(movieList);
+				    }
+			    })
+			}
 		}
     })
 }
@@ -68,7 +96,6 @@ function index(req, res) {
 function show(req, res) {
 	FavoriteMovie.findByPk(req.params.id)
 	    .then(function(favoriteMovie) {
-	    	console.log(favoriteMovie);
 	    	res.json(favoriteMovie);
 	    });
 };
@@ -76,7 +103,6 @@ function show(req, res) {
 function create(req, res) {
 	FavoriteMovie.create(req.body)
 	    .then(function(newFavoriteMovie) {
-	    	console.log(newFavoriteMovie);
 	    	res.json(newFavoriteMovie);
 	    });
 };
@@ -92,7 +118,6 @@ function update(req, res) {
 };
 
 function destroy(req, res) {
-	console.log('req.params.id: ', req.params.id);
 	FavoriteMovie.findByPk(req.params.id)
 	    .then(function(favoriteMovie) {
 	    	return favoriteMovie.destroy();
@@ -103,8 +128,9 @@ function destroy(req, res) {
 }
 
 module.exports.search = search;
-module.exports.searchOne = searchOne;
+module.exports.searchOneByMovieId = searchOneByMovieId;
 module.exports.findByMovieIdAndUserId = findByMovieIdAndUserId;
+module.exports.searchOneByMovieIdAndUserId = searchOneByMovieIdAndUserId;
 module.exports.findByUserId = findByUserId;
 module.exports.index = index;
 module.exports.show = show;

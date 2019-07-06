@@ -4,7 +4,6 @@ const db = require('../models');
 const User = db.models.User;
 
 function index(req, res) {
-	console.log('Yippee index');
 	User.findAll()
 	    .then(function(users) {
 	    	res.json(users);
@@ -12,8 +11,6 @@ function index(req, res) {
 };
 
 function show(req, res) {
-	console.log('Yippee show');
-	console.log('params.id: ', req.params.id);
 	User.findByPk(req.params.id)
 	    .then(function(user) {
 	    	console.log(user);
@@ -40,7 +37,6 @@ function create(req, res) {
 };
 
 function update(req, res) {
-	console.log('Yippee update');
 	User.findByPk(req.params.id)
 	    .then(function(user) {
 	    	return user.updateAttributes(req.body);
@@ -51,8 +47,6 @@ function update(req, res) {
 };
 
 function destroy(req, res) {
-	console.log("here is the req.params.id" + req.params.id);
-	console.log('Yippee destroy');
 	User.findByPk(req.params.id)
 	    .then(function(user) {
 	    	return user.destroy();
@@ -76,13 +70,10 @@ function loginUser(req, res) {
         });
      }
      let p1 = user.dataValues.password,
-        p2 = req.body.password;
+         p2 = req.body.password;
 
      validPassword = function() {
-        console.log('stored from db: ', user.dataValues.password)
-        console.log('password from login form: ', req.body.password)
         bcrypt.compare(req.body.password, user.dataValues.password, function(err, isMatch) {
-           console.log(isMatch)
            if (isMatch === true) {
               res.send({
                  token: auth.createJWT(user),
@@ -90,7 +81,6 @@ function loginUser(req, res) {
               });
             }
             else if (isMatch === false) {
-              console.log("invalid passwoooorrrrddd");
               res.send({ message: 'Invalid password'});
             }
            
