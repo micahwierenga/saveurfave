@@ -1,0 +1,136 @@
+@import url('https://fonts.googleapis.com/css?family=Montserrat:300,300i,400,400i,700,700i&display=swap');
+
+body {
+	font-family: 'Montserrat', 'Helvetica', sans-serif;
+}
+
+a {
+	text-decoration: none;
+}
+
+#username-div {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+}
+
+#username-div #username-display {
+	font-size: 20px;
+    font-weight: bold;
+	color: #209cee;
+}
+
+#search-and-favorites-toggle-container {
+	text-align: center;
+}
+
+#search-and-favorites-toggle-container .button {
+	margin: 10px 20px;
+}
+
+#invalid-login-message-container {
+	margin-bottom: 12px;
+}
+
+#movie-search-container-div {
+	display: flex;
+	justify-content: center;
+	padding: 40px 25%;
+}
+
+#movie-results-no-results {
+	font-size: 18px;
+}
+
+#movie-results-container-div {
+	display: flex;
+    justify-content: center;
+    padding: 40px 25%;
+}
+
+#movie-result-header {
+	font-size: 24px;
+    font-weight: 600;
+    border-bottom: 3px solid black;
+}
+
+#favorite-movies-container {
+	text-align: center;
+	font-size: 18px;
+	margin-top: 20px;
+	padding: 40px 25%;
+}
+
+#movie-details-image-container {
+	float: left;
+	margin: 15px;
+}
+
+#movie-details-long-text-container {
+	clear: both;
+}
+
+#movie-details-buttons-container {
+	margin-top: 20px;
+}
+
+#not-logged-in-text {
+	margin-bottom: 25px;
+}
+
+.header {
+	display: flex;
+	justify-content: space-between;
+	margin: 20px;
+}
+
+.header-heading {
+	font-size: 24px;
+}
+
+.nav {
+	display: flex;
+	justify-content: flex-end;
+}
+
+.nav-item {
+	margin: 0 10px;
+}
+
+.hide {
+	display: none;
+}
+
+.movie-result-item {
+	font-size: 18px;
+	line-height: 1.5;
+	padding: 10px;
+	display: flex;
+	justify-content: space-between;
+}
+
+.item-odd {
+	background: #dddddd;
+}
+
+.movie-results-title {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+}
+
+.movie-details-button-container  {
+	display: inline-block;
+}
+
+.details-button {
+	margin-left: 20px;
+}
+
+.remove-from-favorites-button {
+	margin-left: 10px;
+}
+
+input.input.is-medium {
+	width: 400px;
+}
