@@ -29,7 +29,7 @@ function searchOneByMovieId(req, res) {
 // First get all of the user's favorite movies. Then,
 // check if returned movie is one of the user's favorites.
 // If it is, add the user id and inUserFavorites properties
-// to use on the front end.
+// to use on the front-end.
 function searchOneByMovieIdAndUserId(req, res) {
 	let movie_id = req.params.movie_id;
 	let user_id = req.params.user_id;

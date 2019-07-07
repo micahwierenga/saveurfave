@@ -79,7 +79,7 @@ function loginUser(req, res) {
     validPassword = function() {
     	// Use bcrypt to compare submitted user password and db user password
         bcrypt.compare(req.body.password, user.dataValues.password, function(err, isMatch) {
-        	// If the passwords match, send user and token back to front end
+        	// If the passwords match, send user and token back to front-end
             if (isMatch === true) {
                 res.send({
                     token: auth.createJWT(user),
