@@ -4,6 +4,7 @@ const FavoriteMovie = db.models.FavoriteMovie;
 const OMDB_API_KEY = process.env.OMDB_API_KEY;
 const omdbUrl = "http://www.omdbapi.com/?apikey=" + OMDB_API_KEY;  
 
+// Search omdb for submitted title
 function search(req, res) {
 	let url = omdbUrl + "&s=" + req.query.title;
 	request(url, function(err, response, body) {
@@ -16,6 +17,7 @@ function search(req, res) {
 	})
 }
 
+// Search omdb for movie by it's imdbID
 function searchOneByMovieId(req, res) {
 	let url = omdbUrl + "&i=" + req.params.id;
 	request(url, function(err, response, body) {
@@ -23,6 +25,11 @@ function searchOneByMovieId(req, res) {
 	})
 };
 
+// Search db and omdb for one movie with imdbId and user id.
+// First get all of the user's favorite movies. Then,
+// check if returned movie is one of the user's favorites.
+// If it is, add the user id and inUserFavorites properties
+// to use on the front end.
 function searchOneByMovieIdAndUserId(req, res) {
 	let movie_id = req.params.movie_id;
 	let user_id = req.params.user_id;
@@ -46,6 +53,7 @@ function searchOneByMovieIdAndUserId(req, res) {
 	})
 }
 
+// Search db by movie id and user id
 function findByMovieIdAndUserId(req, res) {
 	FavoriteMovie.findOne({
 		where: {
@@ -58,6 +66,8 @@ function findByMovieIdAndUserId(req, res) {
     });
 }
 
+// Search db for all user's favorited movies. Then get
+// details of each movie, add the db id to each movie object.
 function findByUserId(req, res) {
 	FavoriteMovie.findAll({
 		where: {
@@ -76,6 +86,10 @@ function findByUserId(req, res) {
 			    	let parsedBody = JSON.parse(body);
 			    	parsedBody.id = movies[i].id;
 			    	movieList.push(parsedBody);
+			    	// Because of the asynchronous nature of the request functionality,
+			    	// don't return altered movie objects until the movieList array length
+			    	// and the user's movies array length are equal. Then sort by id to 
+			    	// keep a consistent list.
 				    if(movieList.length == movies.length) {
 				    	movieList.sort((a, b) => (a.id > b.id) ? 1 : -1);
 				    	res.json(movieList);

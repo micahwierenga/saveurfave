@@ -18,6 +18,9 @@ function show(req, res) {
 	    });
 };
 
+// Create new user on signin, using bcrypt and the 
+// auth.js functionality to hash their password and
+// create a token.
 function create(req, res) {
 	bcrypt.genSalt(10, function(err, salt) {
 	   bcrypt.hash(req.body.password, salt, function(err, hash) {
@@ -56,37 +59,41 @@ function destroy(req, res) {
 	    });
 }
 
+// Take login data and confirm that user's email and password match
 function loginUser(req, res) {
   User.findOne({
      where: {
         email: req.body.email
      }
   }).then(function(user) {
-     let compare = 'user.$modelOptions.instanceMethods.comparePassword'
+  	// Get comparePassword method from user object
+    let compare = 'user.$modelOptions.instanceMethods.comparePassword'
 
-     if (!user) {
+    // If user's email doesn't exist in db, return error
+    if (!user) {
         return res.status(401).send({
            message: 'Invalid email or password.'
         });
-     }
-     let p1 = user.dataValues.password,
-         p2 = req.body.password;
+    }
 
-     validPassword = function() {
+    validPassword = function() {
+    	// Use bcrypt to compare submitted user password and db user password
         bcrypt.compare(req.body.password, user.dataValues.password, function(err, isMatch) {
-           if (isMatch === true) {
-              res.send({
-                 token: auth.createJWT(user),
-                 user: user
-              });
+        	// If the passwords match, send user and token back to front end
+            if (isMatch === true) {
+                res.send({
+                    token: auth.createJWT(user),
+                 	user: user
+                });
             }
+            // If the passwords do not match, send error
             else if (isMatch === false) {
               res.send({ message: 'Invalid password'});
             }
            
         });
-     };
-     validPassword();
+    };
+    validPassword();
   });
 }
 

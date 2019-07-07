@@ -1,4 +1,7 @@
-// Handle opening and closing of modals
+/*
+ * MODAL HANDLING
+*/
+
 function createCloseModalEventListeners() {
   // Grab elements with the close-modal-button class
   let closeModalButtons = document.getElementsByClassName('close-modal-button');
@@ -46,6 +49,11 @@ function openModal(modalId) {
   let modal = document.getElementById(modalId);
   modal.classList.add('is-active');
 }
+
+/*
+ * SIGNUP AND LOGIN FUNCTIONALITY
+*/
+
 
 // Signup
 let signupSubmitButton = document.getElementById('signup-submit');
@@ -137,6 +145,8 @@ logoutButton.addEventListener('click', function(event) {
   sessionStorage.clear();
   // Hide logout button and show signup/login buttons
   handleLoginAndLogout();
+  // Switch back to search view just in case user is in Favorites view when logging out
+  toggleSearchView();
 })
 
 // Handle session storage
@@ -197,6 +207,10 @@ function setUserName(id) {
   }
 }
 
+/*
+ * MOVIE SEARCH FUNCTIONALITY
+*/
+
 // Movie search by title
 let movieSearchButton = document.getElementById('movie-search-button');
 movieSearchButton.addEventListener('click', function(event) {
@@ -230,7 +244,6 @@ function prepareMovieList(movies) {
   document.getElementById('movie-results-list').innerHTML = movieList;
   // Attach event listener to the Details buttons because they are created dynamically
   // rather than existing on page load
-  console.log('movieSearchButton');
   createDetailsButtonEventListener();
 }
 
@@ -239,10 +252,9 @@ function createDetailsButtonEventListener() {
   let detailsButton = document.getElementsByClassName('details-button');
   for(let i = 0; i < detailsButton.length; i++) {
     detailsButton[i].addEventListener('click', function(event) {
-      console.log('___________JJJJJ__________');
       let movieId = this.getAttribute('data-movie-id');
       let user_id = sessionStorage.user_id ? sessionStorage.user_id : null;
-      console.log('uzter id: ', user_id);
+
       // When a Details button is clicked, get the movie details by the imdb id
       if(user_id) {
         fetch('/api/searchMovies/' + movieId + '/' + user_id)
@@ -265,7 +277,7 @@ function createDetailsButtonEventListener() {
     })
   }
 }
-console.log('page load');
+
 createDetailsButtonEventListener();
 
 // Get movie details when Details button is clicked
@@ -295,32 +307,63 @@ function setMovieDetailsButton(favorite_movie_table_id, in_user_favorites) {
     document.getElementById('add-to-favorites-button-container').innerHTML = '<button id="remove-from-favorites-button" class="button is-danger" data-movie-id="' + favorite_movie_table_id + '"">Remove From Favorites</button>';
     createRemoveFromFavoritesListenerById();
   }
-  // let user_id = sessionStorage.user_id ? sessionStorage.user_id : null;
-  // if(movie_id) {
-  //   fetch('/api/favorites/' + user_id + '/' + movie_id)
-  //   .then(res => res.json())
-  //   .then(response => {
-  //     if(!response['movie']) {
-  //       document.getElementById('add-to-favorites-button-container').innerHTML = '<button id="add-to-favorites-button" class="button is-success">Add to Favorites</button>';
-  //       createAddToFavoritesListener();
-  //     } else {
-  //       document.getElementById('add-to-favorites-button-container').innerHTML = '<button id="remove-from-favorites-button" class="button is-danger" data-movie-id="' + response['movie']['id'] + '"">Remove From Favorites</button>';
-  //       createRemoveFromFavoritesListenerById();
-  //     }
-  //   })
-  //   .catch(error => console.error('Error: ', error));
-  // }
 }
 
+/*
+ * FAVORITES FUNCTIONALITY
+*/
+
+// Get favorite movies using user id
+function getFavorites() {
+  let user_id = sessionStorage.user_id ? sessionStorage.user_id : null;
+
+  fetch('/api/favorites/' + user_id)
+  .then(res => res.json())
+  .then(response => {
+    if(response['message']) {
+      document.getElementById('favorite-movies-list').innerHTML = '<p id="movie-results-no-results" class="has-text-danger">' + response['message'] + '. Use the search field to find movies and add them to your favorites.</p>';
+    } else {
+      prepareFavoritesList(response);
+    }
+  })
+  .catch(error => console.error('Error: ', error));
+  // Once favorites are ready, show them
+  toggleFavoritesView()
+}
+
+// Create favorite movie list
+function prepareFavoritesList(favorites) {
+  // If there are no favorite movies, display message to encourage user to add favorites
+  if(favorites.length < 1) {
+    document.getElementById('favorite-movies-list').innerHTML = '<p id="movie-results-no-results" class="has-text-danger">No results found. Use the search field to find movies and add them to your favorites.</p>';
+  // Otherwise create list and append to html
+  } else {
+    let favoritesList = '<h2 id="movie-result-header">Favorites</h2>';
+
+    for(let i = 0; i < favorites.length; i++) {
+      let odd = (i % 2 == 0) ? '' : ' item-odd';
+      favoritesList += '<p class="movie-result-item' + odd + '"><span class="movie-results-title">' + favorites[i].Title + '</span><span><a class="button is-success details-button open-modal-button" data-movie-id="' + favorites[i].imdbID + '" data-modal-type="movie-details-modal">Details</a><a class="button is-danger remove-from-favorites-button" data-favorite-movie-id="' + favorites[i].id + '"><i class="fas fa-trash"></i></a></span></p>';
+    }
+    document.getElementById('favorite-movies-list').innerHTML = favoritesList;
+    createRemoveFromFavoritesListenerByClass();
+    createOpenModalEventListeners();
+    createDetailsButtonEventListener();
+  }
+}
+
+// Create event listener for Add to Favorites button in the Movie Details modal
 function createAddToFavoritesListener() {
   let addToFavoritesButton = document.getElementById('add-to-favorites-button');
   addToFavoritesButton.addEventListener('click', function(event) {
     event.preventDefault();
     let loggedIn = isLoggedIn();
+
+    // If the user isn't logged, open feedback modal prompting user to signin or login
     if(!loggedIn) {
       document.getElementById('add-or-view-text').innerHTML = 'add';
       openModal('not-logged-in-modal');
       closeModal('movie-details-modal');
+    // If the user is logged, create functionality to allow user to add movies to their favorites list
     } else {
       let movie_id = document.getElementById('movie-details-imdbid').innerHTML;
       let user_id = sessionStorage.user_id;
@@ -340,14 +383,25 @@ function createAddToFavoritesListener() {
       })
       .then(res => res.json())
       .then(response => {
+        // If the user successfully adds a movie to their favorites, replace the Add to Favorites button with a Remove From Favorites button
         document.getElementById('add-to-favorites-button-container').innerHTML = '<button id="remove-from-favorites-button" class="button is-danger" data-movie-id="' + response['id'] + '"">Remove From Favorites</button>';
+        // Add event listener to Remove From Favorites button since it's dynamically created
         createRemoveFromFavoritesListenerById();
+
+        // If the user is in the Favorites view, then trigger the Favorites button so that, if they add a movie
+        // (they'd have to remove it first in this view), then triggering the Favorites button will dynamically
+        // re-format the list and add the newly added favorite movie
+        let favoriteMoviesContainer = document.getElementById('favorite-movies-container');
+        if(!favoriteMoviesContainer.classList.contains("hide")) {
+          triggerFavoritesToggleButton();
+        }
       })
       .catch(error => console.error('Error: ', error));
     }
   });
 }
 
+// Create event listener for Remove From Favorites button in the Movie Details modal
 function createRemoveFromFavoritesListenerById() {
   let removeFromFavoritesButton = document.getElementById('remove-from-favorites-button');
   removeFromFavoritesButton.addEventListener('click', function(event) {
@@ -359,13 +413,17 @@ function createRemoveFromFavoritesListenerById() {
     })
     .then(res => res.json())
     .then(response => {
+      // If movie is successfully deleted from favorite movies list, replace Remove From Favorites button with Add to Favorites button
       document.getElementById('add-to-favorites-button-container').innerHTML = '<button id="add-to-favorites-button" class="button is-success">Add to Favorites</button>';
+      // Add event listener to Add to Favorites button since it's dynamically created
       createAddToFavoritesListener();
+      // Dynamically remove deleted movie from favorites list
       let removeFromFavoritesButtons = document.getElementsByClassName('remove-from-favorites-button');
       for(let i = 0; i < removeFromFavoritesButtons.length; i++) {
         let favorite_movie_id_attribute = removeFromFavoritesButtons[i].getAttribute('data-favorite-movie-id');
         if(favorite_movie_id_attribute == id) {
           removeFromFavoritesButtons[i].remove();
+          // Trigger the Favorites button so the movies will be formatted correctly
           triggerFavoritesToggleButton();
         }
       }
@@ -374,24 +432,24 @@ function createRemoveFromFavoritesListenerById() {
   });
 }
 
+// Create event listener for Remove From Favorites button in the favorite movies list
 function createRemoveFromFavoritesListenerByClass() {
   let removeFromFavoritesButtons = document.getElementsByClassName('remove-from-favorites-button');
   for(let i = 0; i < removeFromFavoritesButtons.length; i++) {
     removeFromFavoritesButtons[i].addEventListener('click', function(event) {
       event.preventDefault();
-      console.log('start that deletion');
       let id = this.getAttribute('data-favorite-movie-id');
-      let url = "/api/favorites/";
-      console.log('full url: ', url + id);
 
-      fetch(url + id, {
+      fetch("/api/favorites/" + id, {
         method: 'DELETE'
       })
       .then(res => res.json())
       .then(response => {
         console.log('Success: ', response);
+        // If favorite movie is successfully deleted, dynamically remove it from the list
         let listItem = this.closest('.movie-result-item');
         listItem.remove();
+        // Trigger the Favorites button so the movies will be formatted correctly
         triggerFavoritesToggleButton();
       })
       .catch(error => console.error('Error: ', error));
@@ -399,82 +457,55 @@ function createRemoveFromFavoritesListenerByClass() {
   }
 }
 
-function prepareFavoritesList(favorites) {
-  if(favorites.length < 1) {
-    document.getElementById('favorite-movies-list').innerHTML = '<p id="movie-results-no-results" class="has-text-danger">No results found. Use the search field to find movies and add them to your favorites.</p>';
-  } else {
-    let favoritesList = '<h2 id="movie-result-header">Favorites</h2>';
+/*
+ * TOGGLE FUNCTIONALITY
+*/
 
-    for(let i = 0; i < favorites.length; i++) {
-      let odd = (i % 2 == 0) ? '' : ' item-odd';
-      favoritesList += '<p class="movie-result-item' + odd + '"><span class="movie-results-title">' + favorites[i].Title + '</span><span><a class="button is-success details-button open-modal-button" data-movie-id="' + favorites[i].imdbID + '" data-modal-type="movie-details-modal">Details</a><a class="button is-danger remove-from-favorites-button" data-favorite-movie-id="' + favorites[i].id + '"><i class="fas fa-trash"></i></a></span></p>';
-    }
-    document.getElementById('favorite-movies-list').innerHTML = favoritesList;
-    createRemoveFromFavoritesListenerByClass();
-    createOpenModalEventListeners();
-    createDetailsButtonEventListener();
-  }
-}
-
-function createFavoritesToggleButtonEventListener() {
-  let favoritesToggleButton = document.getElementById('favorites-toggle-button');
-  favoritesToggleButton.addEventListener('click', function(event) {
-    event.preventDefault();
-    let loggedIn = isLoggedIn();
-    if(!loggedIn) {
-      document.getElementById('add-or-view-text').innerHTML = 'view';
-      openModal('not-logged-in-modal');
-      closeModal('movie-details-modal');
-    } else {
-      getFavorites();
-    }
-  })
-}
-
-createFavoritesToggleButtonEventListener();
-
-function getFavorites() {
-  let user_id = sessionStorage.user_id ? sessionStorage.user_id : null;
-
-  fetch('/api/favorites/' + user_id)
-  .then(res => res.json())
-  .then(response => {
-    if(response['message']) {
-      document.getElementById('favorite-movies-list').innerHTML = '<p id="movie-results-no-results" class="has-text-danger">' + response['message'] + '. Use the search field to find movies and add them to your favorites.</p>';
-    } else {
-      prepareFavoritesList(response);
-    }
-  })
-  .catch(error => console.error('Error: ', error));
-  toggleFavoritesView()
-}
-
+// Create event listener for Search toggle button
 let searchToggleButton = document.getElementById('search-toggle-button');
 searchToggleButton.addEventListener('click', function(event) {
   toggleSearchView();
 })
 
+
+// Create event listener for Favorites toggle button
+let favoritesToggleButton = document.getElementById('favorites-toggle-button');
+favoritesToggleButton.addEventListener('click', function(event) {
+  event.preventDefault();
+  let loggedIn = isLoggedIn();
+
+  // If the user is not logged in, then open feedback modal that prompts them to signin or login
+  if(!loggedIn) {
+    document.getElementById('add-or-view-text').innerHTML = 'view';
+    openModal('not-logged-in-modal');
+    closeModal('movie-details-modal');
+  // If the user is logged in, get their favorite movies
+  } else {
+    getFavorites();
+  }
+})
+
+// If an item has been deleted or added, trigger the Favorites button to re-format the list
 function triggerFavoritesToggleButton() {
   let event = new Event('click');
   let favoritesToggleButton = document.getElementById('favorites-toggle-button');
   favoritesToggleButton.dispatchEvent(event);
 }
 
-function getFavoriteMoviesListChildNodeCount() {
-  console.log('couuuunt: ', document.getElementById('favorite-movies-list').childElementCount);
-  // return document.getElementById('favorite-movies-list').childElementCount;
-}
-
+// When Search toggle button is clicked, show the correct container and format
+// toggle buttons to show selected toggle button
 function toggleSearchView() {
-  document.getElementById('movie-search-and-results-container').classList.remove('hide')
-  document.getElementById('favorite-movies-container').classList.add('hide')
+  document.getElementById('movie-search-and-results-container').classList.remove('hide');
+  document.getElementById('favorite-movies-container').classList.add('hide');
   document.getElementById('search-toggle-button').classList.add('background-dark');
   document.getElementById('favorites-toggle-button').classList.remove('background-dark');
 }
 
+// When Favorites toggle button is clicked, show the correct container and format
+// toggle buttons to show selected toggle button
 function toggleFavoritesView() {
-  document.getElementById('favorite-movies-container').classList.remove('hide')
-  document.getElementById('movie-search-and-results-container').classList.add('hide')
+  document.getElementById('favorite-movies-container').classList.remove('hide');
+  document.getElementById('movie-search-and-results-container').classList.add('hide');
   document.getElementById('favorites-toggle-button').classList.add('background-dark');
   document.getElementById('search-toggle-button').classList.remove('background-dark');
 }
