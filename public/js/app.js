@@ -2,7 +2,7 @@
  * MODAL HANDLING
 */
 
-function createCloseModalEventListeners() {
+let createCloseModalEventListeners = () => {
   // Grab elements with the close-modal-button class
   let closeModalButtons = document.getElementsByClassName('close-modal-button');
   // Loop through the elements and add the click event listener
@@ -18,7 +18,7 @@ function createCloseModalEventListeners() {
 
 createCloseModalEventListeners();
 
-function createOpenModalEventListeners() {
+let createOpenModalEventListeners = () => {
   // Grab elements with the open-modal-button class
   let openModalButtons = document.getElementsByClassName('open-modal-button');
   // Loop through the elements and add the click event listener
@@ -34,7 +34,7 @@ function createOpenModalEventListeners() {
 
 createOpenModalEventListeners();
 
-function closeModal(modalId) {
+let closeModal = (modalId) => {
   // Get modal by id
   let modal = document.getElementById(modalId);
   // Reset form inside modal if form exists
@@ -45,7 +45,7 @@ function closeModal(modalId) {
   modal.classList.remove('is-active');
 }
 
-function openModal(modalId) {
+let openModal = (modalId) => {
   let modal = document.getElementById(modalId);
   modal.classList.add('is-active');
 }
@@ -87,7 +87,7 @@ signupSubmitButton.addEventListener('click', function(event) {
     // If the user creation is successful, set the user's username in header
     setUserName(response.user.id)
     // If the user creation is successful, hide signup/login buttons and show logout button
-    handleLoginAndLogout()
+    handleLoginAndLogout();
   })
   .catch(error => console.error('Error: ', error));
 
@@ -127,7 +127,7 @@ loginSubmitButton.addEventListener('click', function(event) {
       setSessionStorage('user_id', response.user.id)
       setSessionStorage('token', response.token)
       setUserName(response.user.id)
-      handleLoginAndLogout()
+      handleLoginAndLogout();
       // Only close the modal if there are no errors
       closeModal('login-modal');
     }
@@ -150,21 +150,37 @@ logoutButton.addEventListener('click', function(event) {
 })
 
 // Handle session storage
-function setSessionStorage(key, value) {
+let setSessionStorage = (key, value) => {
   sessionStorage.setItem(key, value);
 }
 
-function removeSessionStorage(key) {
+let removeSessionStorage = (key) => {
   sessionStorage.removeItem(key);
 }
 
 // Check if user is logged in based on session storage
-function isLoggedIn() {
+let isLoggedIn = () => {
   return (sessionStorage && sessionStorage.user_id) ? true : false;
 }
 
+// Set username in upper-right corner if user is logged in
+let setUserName = (id) => {
+  let user_id = sessionStorage.user_id ? sessionStorage.user_id : id;
+  if(user_id) {
+    // Use fetch to get user data by user id
+    fetch('/api/users/' + user_id)
+    .then(res => res.json())
+    .then(response => {
+      document.getElementById('username-display').innerHTML = response.username;
+    })
+    .catch(error => console.error('Error: ', error));
+  } else {
+    document.getElementById('username-display').innerHTML = '';
+  }
+}
+
 // Handle elements/actions based on logged in status
-function handleLoginAndLogout() {
+let handleLoginAndLogout = () => {
   let signupDiv = document.getElementById('signup-div');
   let loginDiv = document.getElementById('login-div');
   let logoutDiv = document.getElementById('logout-div');
@@ -186,26 +202,11 @@ function handleLoginAndLogout() {
     logoutDiv.classList.add('hide');
     usernameDiv.classList.add('hide');
     setUserName();
+    document.getElementById('movie-results-list').innerHTML = '';
   }
 }
 
 handleLoginAndLogout();
-
-// Set username in upper-right corner if user is logged in
-function setUserName(id) {
-  let user_id = sessionStorage.user_id ? sessionStorage.user_id : id;
-  if(user_id) {
-    // Use fetch to get user data by user id
-    fetch('/api/users/' + user_id)
-    .then(res => res.json())
-    .then(response => {
-      document.getElementById('username-display').innerHTML = response.username;
-    })
-    .catch(error => console.error('Error: ', error));
-  } else {
-    document.getElementById('username-display').innerHTML = '';
-  }
-}
 
 /*
  * MOVIE SEARCH FUNCTIONALITY
@@ -234,7 +235,7 @@ movieSearchButton.addEventListener('click', function(event) {
 });
 
 // Create movie list from movie search
-function prepareMovieList(movies) {
+let prepareMovieList = (movies) => {
   // If the search returns movies, create the html and append it to the html
   let movieList = '<h2 id="movie-result-header">Results</h2>';
   for(let i = 0; i < movies.length; i++) {
@@ -248,7 +249,7 @@ function prepareMovieList(movies) {
 }
 
 // Movie details button functionality
-function createDetailsButtonEventListener() {
+let createDetailsButtonEventListener = () => {
   let detailsButton = document.getElementsByClassName('details-button');
   for(let i = 0; i < detailsButton.length; i++) {
     detailsButton[i].addEventListener('click', function(event) {
@@ -281,7 +282,7 @@ function createDetailsButtonEventListener() {
 createDetailsButtonEventListener();
 
 // Get movie details when Details button is clicked
-function prepareMovieDetails(movieDetails) {
+let prepareMovieDetails = (movieDetails) => {
   let keys = Object.keys(movieDetails);
   for(let i = 0; i < keys.length; i++) {
     let lowerKey = keys[i].toLowerCase();
@@ -299,7 +300,8 @@ function prepareMovieDetails(movieDetails) {
   setMovieDetailsButton(movieDetails.favorite_movie_table_id, movieDetails.inUserFavorites);
 }
 
-function setMovieDetailsButton(favorite_movie_table_id, in_user_favorites) {
+// Determine which button to display in the movie details modal
+let setMovieDetailsButton = (favorite_movie_table_id, in_user_favorites) => {
   if(!in_user_favorites) {
     document.getElementById('add-to-favorites-button-container').innerHTML = '<button id="add-to-favorites-button" class="button is-success">Add to Favorites</button>';
     createAddToFavoritesListener();
@@ -314,7 +316,7 @@ function setMovieDetailsButton(favorite_movie_table_id, in_user_favorites) {
 */
 
 // Get favorite movies using user id
-function getFavorites() {
+let getFavorites = () => {
   let user_id = sessionStorage.user_id ? sessionStorage.user_id : null;
 
   fetch('/api/favorites/' + user_id)
@@ -328,11 +330,11 @@ function getFavorites() {
   })
   .catch(error => console.error('Error: ', error));
   // Once favorites are ready, show them
-  toggleFavoritesView()
+  toggleFavoritesView();
 }
 
 // Create favorite movie list
-function prepareFavoritesList(favorites) {
+let prepareFavoritesList = (favorites) => {
   // If there are no favorite movies, display message to encourage user to add favorites
   if(favorites.length < 1) {
     document.getElementById('favorite-movies-list').innerHTML = '<p id="movie-results-no-results" class="has-text-danger">No results found. Use the search field to find movies and add them to your favorites.</p>';
@@ -352,7 +354,7 @@ function prepareFavoritesList(favorites) {
 }
 
 // Create event listener for Add to Favorites button in the Movie Details modal
-function createAddToFavoritesListener() {
+let createAddToFavoritesListener = () => {
   let addToFavoritesButton = document.getElementById('add-to-favorites-button');
   addToFavoritesButton.addEventListener('click', function(event) {
     event.preventDefault();
@@ -402,7 +404,7 @@ function createAddToFavoritesListener() {
 }
 
 // Create event listener for Remove From Favorites button in the Movie Details modal
-function createRemoveFromFavoritesListenerById() {
+let createRemoveFromFavoritesListenerById = () => {
   let removeFromFavoritesButton = document.getElementById('remove-from-favorites-button');
   removeFromFavoritesButton.addEventListener('click', function(event) {
     event.preventDefault();
@@ -433,7 +435,7 @@ function createRemoveFromFavoritesListenerById() {
 }
 
 // Create event listener for Remove From Favorites button in the favorite movies list
-function createRemoveFromFavoritesListenerByClass() {
+let createRemoveFromFavoritesListenerByClass = () => {
   let removeFromFavoritesButtons = document.getElementsByClassName('remove-from-favorites-button');
   for(let i = 0; i < removeFromFavoritesButtons.length; i++) {
     removeFromFavoritesButtons[i].addEventListener('click', function(event) {
@@ -486,7 +488,7 @@ favoritesToggleButton.addEventListener('click', function(event) {
 })
 
 // If an item has been deleted or added, trigger the Favorites button to re-format the list
-function triggerFavoritesToggleButton() {
+let triggerFavoritesToggleButton = () => {
   let event = new Event('click');
   let favoritesToggleButton = document.getElementById('favorites-toggle-button');
   favoritesToggleButton.dispatchEvent(event);
@@ -494,7 +496,7 @@ function triggerFavoritesToggleButton() {
 
 // When Search toggle button is clicked, show the correct container and format
 // toggle buttons to show selected toggle button
-function toggleSearchView() {
+let toggleSearchView = () => {
   document.getElementById('movie-search-and-results-container').classList.remove('hide');
   document.getElementById('favorite-movies-container').classList.add('hide');
   document.getElementById('search-toggle-button').classList.add('background-dark');
@@ -503,7 +505,7 @@ function toggleSearchView() {
 
 // When Favorites toggle button is clicked, show the correct container and format
 // toggle buttons to show selected toggle button
-function toggleFavoritesView() {
+let toggleFavoritesView = () => {
   document.getElementById('favorite-movies-container').classList.remove('hide');
   document.getElementById('movie-search-and-results-container').classList.add('hide');
   document.getElementById('favorites-toggle-button').classList.add('background-dark');
