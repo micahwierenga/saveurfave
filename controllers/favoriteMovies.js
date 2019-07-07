@@ -86,7 +86,7 @@ function findByUserId(req, res) {
 			    	let parsedBody = JSON.parse(body);
 			    	parsedBody.id = movies[i].id;
 			    	movieList.push(parsedBody);
-			    	// Because of the asynchronous nature of the request functionality,
+			    	// Because the request functionality is not asynchronous,
 			    	// don't return altered movie objects until the movieList array length
 			    	// and the user's movies array length are equal. Then sort by id to 
 			    	// keep a consistent list.
